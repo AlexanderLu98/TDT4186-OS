@@ -25,4 +25,7 @@ unsigned int get_alarm_count();
 // Alarm scheduling
 unsigned int schedule_alarm(time_t timestamp);
 
+//Canceling alarms
+void cancel_alarm(unsigned int id);
+
 #endif 

@@ -49,3 +49,11 @@ unsigned int schedule_alarm(time_t timestamp)
     unsigned int alarm_id = alarm_count;
     alarms[alarm_id] = new_alarm;
     alarm_count += 1;
+
+
+void cancel_alarm(unsigned int id)
+{
+    alarm_t alarm = get_alarm(id);
+    kill(2);
+    alarm_count -= 1;
+}

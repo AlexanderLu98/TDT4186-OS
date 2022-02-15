@@ -1,22 +1,21 @@
 #include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#include <time.h>
 #include <string.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <sys/time.h>
 
 int main() {
 
     char choice;
 
+    time_t mytime = time(NULL);
+    char * time_str = ctime(&mytime);
+    time_str[strlen(time_str)-1] = '\0';
+
     do {
         //system("cls") //what
-        
-        printf("Welcome to the alarm clock! It is currently");
-        printf("time");
-        printf("Please enter \"s\" (schedule), \"l\" (list), \"c\" (cancel), \"x\" (exit)");
+        //printf("\n");
+        printf("\nWelcome to the alarm clock! It is currently ");
+        printf("%s",time_str);
+        printf("\nPlease enter \"s\" (schedule), \"l\" (list), \"c\" (cancel), \"x\" (exit)\n");
 
         scanf("%c", &choice);
 

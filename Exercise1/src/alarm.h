@@ -22,4 +22,7 @@ alarm_t get_alarm(unsigned int id);
 // Helper method: Get number of alarms
 unsigned int get_alarm_count();
 
+// Alarm scheduling
+unsigned int schedule_alarm(time_t timestamp);
+
 #endif 

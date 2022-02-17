@@ -7,7 +7,7 @@ alarm_t alarms[MAX];
 
 alarm_t get_alarm(unsigned int id)
 {
-    return alarms[id]; 
+    return alarms[id];
 }
 
 unsigned int get_alarm_count()
@@ -27,9 +27,9 @@ unsigned int _fork(time_t timestamp)
     }
     else
     { // Child
-        sleep(3);
-        //For now, it is sufficient if “RING” is printed on the screen.
-        printf("RING");
+        sleep(timestamp - time(NULL));
+        //Playing alarm sound
+        play_alarm_sound();
         exit(0);
         return 0;
     }
@@ -50,10 +50,21 @@ unsigned int schedule_alarm(time_t timestamp)
     alarms[alarm_id] = new_alarm;
     alarm_count += 1;
 
+    // TODO: should this function return something?
+    return 0;
+}
 
 void cancel_alarm(unsigned int id)
 {
     alarm_t alarm = get_alarm(id);
+    // this needs to kill something, probably the process ID
     kill(2);
     alarm_count -= 1;
+}
+
+
+void play_alarm_sound()
+{
+    if(SYSTYPE == 2) system("mpg123 --quiet ringtones/sea_shanty.mp3");
+    else if (SYSTYPE == 1) system("afplay ringtones/sea_shanty.mp3");
 }

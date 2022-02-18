@@ -20,15 +20,7 @@
 #endif
 
 // "It is sufficient if you implement a statically sized array and refuse new entries in the array is full"
-#define MAX 3
-
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <semaphore.h>
-
+#define MAX 10
 
 
 

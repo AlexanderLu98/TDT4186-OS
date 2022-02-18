@@ -46,7 +46,7 @@ int main() {
                 end = strptime(alarm_time_str, "%Y-%m-%d %H:%M:%S", &alarm_time_tm);
                 if (end == NULL || *end != '\0')
                 {
-                    printf("\nError in data and time input, alarm not scheduled.");
+                    printf("\nError in date and time input, alarm not scheduled.");
                     break;
                 }
                 else
@@ -69,6 +69,7 @@ int main() {
                 printf("Invalid input");
                 break;
         }
+        waitpid(-1, NULL, WNOHANG);
     }
     while(choice != 'x');
     return 0;

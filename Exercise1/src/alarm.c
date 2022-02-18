@@ -1,8 +1,16 @@
 #include "alarm.h"
 
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include <semaphore.h>
+
 //Initial alarm count is zero
 unsigned int alarm_count = 0;
 alarm_t alarms[MAX];
+int status;
 
 alarm_t get_alarm(unsigned int id)
 {

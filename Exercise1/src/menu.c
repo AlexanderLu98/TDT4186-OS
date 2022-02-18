@@ -34,6 +34,9 @@ int main() {
         // sets daylight savings time, if not mktime will be one hour early.
         alarm_time_tm.tm_isdst = -1;
 
+        // variables for canceling specific alarm 
+        int alarm_id;
+
 
         // Determine what method should be called based on input
         switch (choice) {
@@ -60,7 +63,21 @@ int main() {
                 list_active_alarms();
                 break;
             case 'c':
-                printf("C"); //cancel();
+                printf("Which alarm would you like to cancel?\n");
+                // List all options
+                list_active_alarms();
+                printf("\nPlease enter the alarm ID: ");
+
+                // Read input
+                //scanf("%u", &alarm_id);
+                alarm_id = getchar();
+                flush_in();
+
+                // Cancel chosen alarm
+                printf("\nAttempting to cancel alarm with ID: %c\n", alarm_id);
+
+                //int id = (int) &alarm_id;
+                cancel_alarm(alarm_id);
                 break;
             case 'x':
                 printf("Exiting");
@@ -73,3 +90,5 @@ int main() {
     while(choice != 'x');
     return 0;
 }
+
+//2023-01-10 13:37:00

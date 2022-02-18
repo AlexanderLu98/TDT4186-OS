@@ -6,6 +6,8 @@ alarm_t alarms[MAX];
 
 alarm_t get_alarm(unsigned int id)
 {
+    printf("id: %u", id);
+    printf("pid: %u", alarms[id].pid);
     return alarms[id];
 }
 
@@ -82,10 +84,12 @@ void cancel_alarm(unsigned int id)
 {
     // The alarm needs to be removed from the list after being canceled, at this time nothing happens to it.
     alarm_t alarm = get_alarm(id);
-    kill(alarm.pid);
-    // Set the alarm as inactive
+    kill(alarm.pid, SIGKILL);
+    // Set the alarm as inactives
+
     alarms[id].active = 0;
     alarm_count -= 1;
+    printf("test id: %c", id);
 }
 
 void list_active_alarms()
@@ -95,11 +99,11 @@ void list_active_alarms()
     {
         if(alarms[i].active == 1)
         {
-            printf("ID: %i PID: %u ACTIVE: %i TIME: %s", i, alarms[i].pid, alarms[i].active, ctime(&alarms[i].timestamp));
+            printf("ID: %i - PID: %u - ACTIVE - TIME: %s", i, alarms[i].pid, ctime(&alarms[i].timestamp));
         }
         else
         {
-            printf("ID: %i PID: %u ACTIVE: %i TIME: %s", i, alarms[i].pid, alarms[i].active, ctime(&alarms[i].timestamp));
+            printf("ID: %i - PID: %u - NOT ACTIVE - TIME: %s", i, alarms[i].pid, ctime(&alarms[i].timestamp));
         }
     }
     printf("END OF LIST. \n");
@@ -111,3 +115,4 @@ void play_alarm_sound()
     if(SYSTYPE == 2) system("mpg123 --quiet ringtones/sea_shanty.mp3");
     else if (SYSTYPE == 1) system("afplay ringtones/sea_shanty.mp3");
 }
+//2023-01-10 13:37:00

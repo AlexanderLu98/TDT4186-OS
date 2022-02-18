@@ -43,9 +43,6 @@ typedef struct alarm_t
     unsigned int active;
 } alarm_t;
 
-// Helper method: starting the semaphores for syncing
-void init_mutex();
-
 // Helper method: Find the empty spaces in the alarm array
 int get_free_alarm_id();
 

@@ -4,15 +4,6 @@
 unsigned int alarm_count = 0;
 alarm_t alarms[MAX];
 
-// semaphores
-sem_t mutex_1, mutex_2;
-
-void init_mutex()
-{
-    sem_init(&mutex_1, 1, 0);
-    sem_init(&mutex_2, 1, 0);
-}
-
 alarm_t get_alarm(unsigned int id)
 {
     return alarms[id];
@@ -78,8 +69,6 @@ unsigned int schedule_alarm(time_t timestamp)
         //Designates an ID equal to the alarm count
         alarms[alarm_id] = new_alarm;
         alarm_count += 1;
-        // signaling that the process is done
-        printf("\nSent signal from mutex, proceeding\n.");
     }
     else
     {

@@ -10,7 +10,7 @@ void flush_in(void)
 int main() {
     // Variable that holds the users choice as a char
     char choice;
-    init_mutex();
+
     do {
         // Get the current time
         time_t mytime = time(NULL);
@@ -26,6 +26,7 @@ int main() {
         choice = getchar();
         flush_in();
 
+        // variables for scheduling the alarm
         char alarm_time_str[] =  "YYYY-MM-DD HH:MM:SS";
         time_t alarm_time;
         struct tm alarm_time_tm;

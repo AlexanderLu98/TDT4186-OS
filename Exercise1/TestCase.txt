@@ -1,6 +1,32 @@
 Test case documentation:
 
-Test Case 1: Canceling alarms
+
+Test Case 1: Basic functions for alarmclock
+Expected: The scheduled alarm fires as planned
+
+1. Run program and schedule an alarm.
+
+2. Wait for the appropriate amount of time until the alarm is designateded to fire
+
+3. Confirm that the alarm fires with correct ringtone and response.
+
+4. Check list to confirm that it is gone
+
+5. Exit program by pressing "x"
+
+
+Test Case 2: Catching zombies
+Expected: When program is exited the children node are killed and when we open program afterwards there should be no lingering "zombies"
+1. Run program and schedule an alarm.
+
+2. Wait for the appropriate amount of time until the alarm is designateded to fire
+
+3. Confirm that the alarm fires with correct ringtone and response. This should also kill the child.
+
+4. Confirm there are no zombie process left.
+
+
+Test Case 3: Canceling alarms
 Expected: Canceling the alarm when given appropriate id
 
 1. Run program and press "s" to schedule an alarm at a arbitrary time. 
@@ -16,7 +42,7 @@ Now we can test how the program responds when we cancel an alarm that does not e
 5. Press "c" and cancel a non-existing alarm. Observe that we get the appropriate feedback.
 
 
-Test Case 2: Scheduling more alarms than the fixed array size
+Test Case 4: Scheduling more alarms than the fixed array size
 Expected: When the array is full and we schedule a new alarm the newly made alarm should wrap around to the beginning of the array.
 
 Currently, the array of alarms are of a fixed size of 3.
@@ -25,7 +51,3 @@ Currently, the array of alarms are of a fixed size of 3.
 
 2. Now the array should be full. We schedule another alarm and observe that it indeed warps arount to the beginning of the array.
 
-
-Test Case 3:
-
-Test Case 4:

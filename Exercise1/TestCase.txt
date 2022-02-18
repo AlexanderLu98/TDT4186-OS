@@ -1,1 +1,31 @@
-Test cases:
+Test case documentation:
+
+Test Case 1: Canceling alarms
+Expected: Canceling the alarm when given appropriate id
+
+1. Run program and press "s" to schedule an alarm at a arbitrary time. 
+
+2. Press "l" to list alarms. We observe that the newly scheduled alarm is in the list over alarms and confirm it is active.
+
+3. Press "c" and input the index of the alarm in the beforementioned list to cancel the alarm
+
+4. Press "l" one more time to see the list og alarms again. Observe that the appropriate alarm was removed from the list of active alarms.
+
+Now we can test how the program responds when we cancel an alarm that does not exist:
+
+5. Press "c" and cancel a non-existing alarm. Observe that we get the appropriate feedback.
+
+
+Test Case 2: Scheduling more alarms than the fixed array size
+Expected: When the array is full and we schedule a new alarm the newly made alarm should wrap around to the beginning of the array.
+
+Currently, the array of alarms are of a fixed size of 3.
+
+1. Schedule 3 arbitrary alarms. For every time we schedule a new alarm we check that the array is being filled up by looking at list.
+
+2. Now the array should be full. We schedule another alarm and observe that it indeed warps arount to the beginning of the array.
+
+
+Test Case 3:
+
+Test Case 4:

@@ -1,0 +1,20 @@
+Ting som fortsatt må gjøres:
+
+c) Alarm scheduling:
+
+    Her trenger vi en måte for å oppdatere lista vår over aktive alarmer - per nå slettes de ikke fra lista (settes som inaktiv),
+    og dette bør gjøres automatisk etter at alarmen har gått og at en child prosess har kalla exit. (Tror jeg ... )
+
+d) Canceling Alarms:
+
+    Mangler bare bruker input i menyen. Har ikke testet, men det urde være så enkelt som å sette den som inaktiv og bruke kill(PID).
+                                     
+e) Catch Zombies:
+
+    Dette tror jeg bare er en linje med kode en plass, men er usikker på hvordan vi må gjøre det for å ungå at hele parrent
+    prosessen venter til at en alarm blir ferdig.
+
+g) Test cases:
+
+    :-(
+

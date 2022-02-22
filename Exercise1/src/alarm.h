@@ -21,7 +21,9 @@
 
 // "It is sufficient if you implement a statically sized array and refuse new entries in the array is full"
 #define MAX 10
+#define MAX_TRACKS 20
 
+#include <time.h>
 
 
 // "Create a data structure for the alarms"
@@ -45,13 +47,19 @@ alarm_t get_alarm(unsigned int id);
 unsigned int get_alarm_count();
 
 // Alarm scheduling
-unsigned int schedule_alarm(time_t timestamp);
+unsigned int schedule_alarm(time_t timestamp, char * trackpath, int tracknum);
 
 //Canceling alarms
 void cancel_alarm(unsigned int id);
 
 //list active alarms
 void list_active_alarms();
+
+// listing available sounds for the alarm
+void list_available_alarm_tracks(char * path);
+
+// gets the available alarm tracks, stores them in a list, and return the number of tracks
+int get_available_alarm_tracks(char * path, char ** tracklist);
 
 // playing a custom sound for the alarm
 void play_alarm_sound();

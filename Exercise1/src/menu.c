@@ -24,63 +24,65 @@ int main(int argc, char *argv[]) {
          -st | --set-track <track_num>  : set a track for the alarm by it's position listed by -lt
     ================================================================================================
     */
-    char *option = argv[1];
+
+    // path to the ringtone tracks
     char *trackpath = "ringtones";
     // the default track choice is the first track in the folder
     int trackchoice = 0;
 
-
-    if(strcmp("-lt", option) == 0 || strcmp("--list-tracks", option) == 0)
+    if (argc > 1)
     {
-        printf("Available tracks are: \n");
-        list_available_alarm_tracks(trackpath);
-        return 0;
+        char *option = argv[1];
 
-    }
-    else if(strcmp("-st", option) == 0 || strcmp("--set-track", option) == 0)
-    {
-        // check for empty string
-        if(strlen(argv[2]) != 0 && argc >= 2)
+        if(strcmp("-lt", option) == 0 || strcmp("--list-tracks", option) == 0)
         {
-            char * p;
-            long tmp_arg = strtol(argv[2], &p, 10);
+            printf("Available tracks are: \n");
+            list_available_alarm_tracks(trackpath);
+            return 0;
 
-            // if there is no error, the long is casted as an int
-            if(*p == '\0' && tmp_arg < INT_MAX && tmp_arg > INT_MIN)
+        }
+        else if(strcmp("-st", option) == 0 || strcmp("--set-track", option) == 0)
+        {
+            // check for empty string
+            if(argc > 2 && strlen(argv[2]) != 0)
             {
-                trackchoice = tmp_arg;
-            }
-            else
-            {
-                printf("An error occured while parsing track number. Default 0 will be used.\n");
-            }
+                char * p;
+                long tmp_arg = strtol(argv[2], &p, 10);
 
-            printf("Running alarm with track: %i  \n", trackchoice);
+                // if there is no error, the long is casted as an int
+                if(*p == '\0' && tmp_arg < INT_MAX && tmp_arg > INT_MIN)
+                {
+                    trackchoice = tmp_arg;
+                }
+                else
+                {
+                    printf("An error occured while parsing track number. Default 0 will be used.\n");
+                }
+
+                printf("Running alarm with track: %i  \n", trackchoice);
+            }
+        }
+        else if (strcmp("-h", option) == 0 || strcmp("--help", option) == 0)
+        {
+            printf("================================================================================================\n");
+            printf("Welcome to the alarm clock. The program can only parse one option at the time\n");
+            printf("Available options are:\n");
+            printf("     -lt | --list-tracks            : list tracks in the ringtone folder\n");
+            printf("     -st | --set-track <track_num>  : set a track for the alarm by it's position listed by -lt\n");
+            printf("     -h  | --help                   : displays the current menu\n");
+            printf("================================================================================================\n");
+
+            return 0;
+        }
+        else
+        {
+            printf("Unknown option. Please run the program with the -h or --help flag to view a list of valid options\n");
+            printf("Terminating program\n");
+            // return 1 signifying error from main.
+            return 1;
         }
     }
-    else if (strcmp("-h", option) == 0 || strcmp("--help", option) == 0)
-    {
-        printf("================================================================================================\n");
-        printf("Welcome to the alarm clock. The program can only parse one option at the time\n");
-        printf("Available options are:\n");
-        printf("     -lt | --list-tracks            : list tracks in the ringtone folder\n");
-        printf("     -st | --set-track <track_num>  : set a track for the alarm by it's position listed by -lt\n");
-        printf("     -h  | --help                   : displays the current menu\n");
-        printf("================================================================================================\n");
 
-        return 0;
-    }
-    else if (strlen(argv[1]) != 0)
-    {
-        printf("Unknown option. Please run the program with the -h or --help flag to view a list of valid options\n");
-        printf("Terminating program\n");
-        // return 1 signifying error from main.
-        return 1;
-    }
-    else
-    {
-        printf("No options chosen, running with default alarm track. \n");
-    }
 
     /*
     ================================================================================================
@@ -153,10 +155,10 @@ int main(int argc, char *argv[]) {
                 cancel_alarm(alarm_id_to_cancel - '0');
                 break;
             case 'x':
-                printf("Exiting");
+                printf("Exiting\n");
                 break;
             default:
-                printf("Invalid input");
+                printf("Invalid input\n");
                 break;
         }
         waitpid(-1, &status, WNOHANG);

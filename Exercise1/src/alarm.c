@@ -15,8 +15,8 @@ int status;
 
 alarm_t get_alarm(unsigned int id)
 {
-    printf("id: %u", id);
-    printf("pid: %u", alarms[id].pid);
+    printf("id: %u\n", id);
+    printf("pid: %u\n", alarms[id].pid);
     return alarms[id];
 }
 
@@ -103,7 +103,7 @@ void cancel_alarm(unsigned int id)
             alarms[id].timestamp = 0;
             // updating alarm count
             alarm_count -= 1;
-            printf("test id: %c", id);
+            printf("Alarm with id: %u\n successfully canceled.", id);
         }
         else
         {

@@ -15,6 +15,8 @@ int status;
 
 alarm_t get_alarm(unsigned int id)
 {
+    printf("id: %u", id);
+    printf("pid: %u", alarms[id].pid);
     return alarms[id];
 }
 
@@ -94,11 +96,14 @@ void cancel_alarm(unsigned int id)
         alarm_t alarm = get_alarm(id);
         if(alarm.pid > 0)
         {
-            kill(alarm.pid, 0);
-            // Set all the alarm values as 0, making room for new alarms
+            kill(alarm.pid, SIGKILL);
+            // Set the alarm as inactives
             alarms[id].active    = 0;
             alarms[id].pid       = 0;
             alarms[id].timestamp = 0;
+            // updating alarm count
+            alarm_count -= 1;
+            printf("test id: %c", id);
         }
         else
         {
@@ -119,7 +124,7 @@ void list_active_alarms()
     {
         if(alarms[i].active == 1)
         {
-            printf("ID: %i PID: %u ACTIVE: %i TIME: %s", i, alarms[i].pid, alarms[i].active, ctime(&alarms[i].timestamp));
+            printf("ID: %i - PID: %u - ACTIVE - TIME: %s", i, alarms[i].pid, ctime(&alarms[i].timestamp));
         }
     }
     printf("END OF LIST. \n");
@@ -210,3 +215,4 @@ void play_alarm_sound(char *path, int index)
     for(int i=0; i<MAX_TRACKS;i++) free(tracklist[i]);
     free(tracklist);
 }
+//2023-01-10 13:37:00

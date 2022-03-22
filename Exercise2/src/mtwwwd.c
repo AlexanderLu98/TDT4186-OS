@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    error("No www-path given, terminating aplication \n");
+    error("No www-path given, terminating application \n");
   }
   if (argc > 2)
   {
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    error("No port given, terminating aplication \n");
+    error("No port given, terminating appication \n");
   }
   if (argc > 3)
   {

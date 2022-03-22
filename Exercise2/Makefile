@@ -10,8 +10,8 @@ CFLAGS  = -g -Wall
 
 TARGET = mtwwwd
 
-$(TARGET): src/mtwwwd.c src/sem.c
-	$(CC) $(CFLAGS) -o $(TARGET) src/mtwwwd.c src/sem.c
+$(TARGET): src/mtwwwd.c src/sem.c src/bbuffer.c
+	$(CC) $(CFLAGS) -o $(TARGET) src/mtwwwd.c src/sem.c src/bbuffer.c
 
 clean:
 	$(RM) $(TARGET)

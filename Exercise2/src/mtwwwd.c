@@ -5,6 +5,9 @@
 #include <sys/sendfile.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "sem.h"
+#include "bbuffer.h"
+
 #define MAXREQ (4096*1024)
 
 char buffer[MAXREQ], body[MAXREQ], msg[MAXREQ];
@@ -12,6 +15,7 @@ void error(const char *msg){perror(msg); exit(1);}
 
 int main(int argc, char *argv[])
 {
+  printf("Something something!\n");
   // initializing the path as a string with max length of 100, because that should be enough.
   char www_path[MAXREQ];
   char www_path_head[1024];
@@ -19,8 +23,19 @@ int main(int argc, char *argv[])
   int num_of_threads;
   int num_of_buffer_slots;
   FILE *fp;
-  char *file_data;
-  int file_size;
+
+  // DEBUG AREA -- JUST FOR TESTING!
+
+  /*
+  printf("starting init!\n");
+  BNDBUF *bb = bb_init(10);
+  printf("starting add!\n");
+  bb_add(bb, 20);
+  printf("got past add!\n");
+  printf("%d \n", bb_get(bb));
+  */
+
+  // DEBUG AREA -- JUST FOR TESTING!
 
   // Parse arguments
   if (argc > 1)
@@ -79,7 +94,10 @@ int main(int argc, char *argv[])
     n = read(connfd, buffer, sizeof(buffer) - 1);
     if(n < 0) error("Error reading from socket");
 
+    printf("Before: %s\n", www_path);
     strcpy(www_path, www_path_head);
+    printf("After : %s\n", www_path);
+
     strtok(buffer, " ");
     strcat(www_path, strtok(NULL, " "));
 
@@ -88,31 +106,28 @@ int main(int argc, char *argv[])
 
     if (fp != NULL) {
         size_t newLen = fread(body, sizeof(char), MAXREQ, fp);
-        if ( ferror( fp ) != 0 ) {
-            fputs("Error reading file", stderr);
+        if ( ferror(fp) != 0 ) {
+            fputs("Error reading file\n", stderr);
+            strcpy(body, "404 no such file!\n");
+            snprintf(msg, sizeof(msg),
+                     "HTTP/1.0 200 OK\n"
+                     "Content-Type: text/html\n"
+                     "Content-Length: %d\n\n%s",
+                     strlen(body), body);
+            n = write(connfd, msg, strlen(msg));
         } else {
             body[newLen++] = '\0'; /* Just to be safe. */
+
+            snprintf(msg, sizeof(msg),
+                     "HTTP/1.0 200 OK\n"
+                     "Content-Type: text/html\n"
+                     "Content-Length: %d\n\n%s",
+                     strlen(body), body);
+            n = write(connfd, msg, strlen(msg));
+            if(n < 0) error("Error writing to socket");
         }
         fclose(fp);
     }
-
-    snprintf(msg, sizeof(msg),
-             "HTTP/1.0 200 OK\n"
-             "Content-Type: text/html\n"
-             "Content-Length: %d\n\n%s",
-             strlen(body), body);
-
-    n = write(connfd, msg, strlen(msg));
-    if(n < 0) error("Error writing to socket");
     close(connfd);
   }
 }
-
-
-/*
-  snprintf(body, sizeof(body),
-  "<html>\n<body>\n"
-  "<h1> Hello web browser</h1>\nYour request was\n"
-  "<pre>%s</pre>\n"
-  "</body>\n</html>\n", buffer);
-*/

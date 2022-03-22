@@ -1,5 +1,10 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+
 #include "bbuffer.h"
-#inlucde "sem.h"
+#include "sem.h"
 
 /*
  * Bounded Buffer implementation to manage int values that supports multiple
@@ -15,7 +20,13 @@
 
 typedef struct BNDBUF
 {
-  int **buffer;
+  // buffer of ints and it's length
+  int *buffer;
+  int size;
+
+  // counting semaphores
+  SEM *filled_slots;
+  SEM *empty_slots;
 
 }BNDBUF;
 
@@ -37,17 +48,36 @@ typedef struct BNDBUF
 
 BNDBUF *bb_init(unsigned int size)
 {
-  BNDBUF *bndbuf = malloc(sizeof(BNDBUF));
-  if(!bndbuf)
+  BNDBUF *bb = malloc(sizeof(BNDBUF));
+  if(!bb)
   {
     return NULL;
   }
-  &bndbuf -> buffer = malloc(sizeof(int)*size);
-  if(!(&bndbuf-> buffer))
+
+  // setting buffer size
+  bb -> size = size;
+
+  bb -> buffer = malloc(bb->size*sizeof(int));
+  if(!(&bb-> buffer))
   {
-    free(bndbuf);
+    free(bb);
     return NULL;
   }
+
+  // initializing the buffer with INT_MIN to signify an empty cell.
+  for(int i=0; i < bb -> size; i++)
+  {
+    bb -> buffer[i] = INT_MIN;
+  }
+
+  // init the semaphores
+  bb -> filled_slots = sem_init(0);
+  bb -> empty_slots  = sem_init(size);
+
+  //printf("filled_slots %d: \n", bb -> filled_slots -> value);
+  //printf("empty_slots %d: \n",  bb -> empty_slots  -> value);
+
+  return bb;
 }
 
 /* Destroys a Bounded Buffer.
@@ -59,7 +89,16 @@ BNDBUF *bb_init(unsigned int size)
  * bb       Handle of the bounded buffer that shall be freed.
  */
 
-void bb_del(BNDBUF *bb);
+void bb_del(BNDBUF *bb)
+{
+  sem_del(bb-> filled_slots);
+  sem_del(bb-> empty_slots);
+
+  free(bb  -> buffer);
+  free(&bb -> buffer);
+  free(&bb -> size);
+  free(bb);
+}
 
 /* Retrieve an element from the bounded buffer.
  *
@@ -76,7 +115,25 @@ void bb_del(BNDBUF *bb);
  * the int element
  */
 
-int  bb_get(BNDBUF *bb);
+int  bb_get(BNDBUF *bb)
+{
+  // checks if there is any data if so.
+  V(bb -> filled_slots);
+  // do something here
+  int item = INT_MIN;
+  for(int i = 0; i < bb->size; i++)
+  {
+    if(bb -> buffer[i] > INT_MIN)
+    {
+      item = bb -> buffer[i];
+      bb -> buffer[i] = INT_MIN;
+    }
+  }
+
+  // increments the empty semaphore - signaling that there is an open slot in the buffer.
+  P(bb -> empty_slots);
+  return item;
+}
 
 /* Add an element to the bounded buffer.
  *
@@ -94,4 +151,18 @@ int  bb_get(BNDBUF *bb);
  * the int element
  */
 
-void bb_add(BNDBUF *bb, int fd);
+void bb_add(BNDBUF *bb, int fd)
+{
+  // tries to put something in to the buffer, blocks if there are no empty slots
+  P(bb -> empty_slots);
+  // loops through the list checking for empty slots.
+  for(int i = 0; i < bb->size; i++)
+  {
+    if(bb -> buffer[i] == INT_MIN)
+    {
+      bb -> buffer[i] = fd;
+    }
+  }
+  // updates the number of filled slots - making it possible to read from buffer.
+  V(bb -> filled_slots);
+}

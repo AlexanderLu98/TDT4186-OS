@@ -48,24 +48,28 @@ typedef struct SEM
  * handle for the created semaphore, or NULL if an error occured.
  */
 
-SEM *sem_init(int initVal)
+struct SEM *sem_init(int initVal)
 {
-  SEM *sem = malloc(sizeof(SEM));
+  struct SEM *sem = malloc(sizeof(SEM));
   if(!sem)
   {
     return NULL;
   }
 
   sem -> value = initVal;
+  printf("init value: %d \n", sem->value);
 
-  if(!pthread_mutex_init(&sem -> mutex, NULL))
+  if(pthread_mutex_init(&sem->mutex, NULL))
   {
+    printf("error on pthread_mutex_init \n");
     free(sem);
     return NULL;
   }
-  if(!pthread_cond_init(&sem -> conditon_var, NULL))
+
+  if(pthread_cond_init(&sem->conditon_var, NULL))
   {
-    pthread_mutex_destroy(&sem -> mutex);
+    printf("error on pthread_cond_init %d \n");
+    pthread_mutex_destroy(&sem->mutex);
     free(sem);
     return NULL;
   }
@@ -89,12 +93,12 @@ SEM *sem_init(int initVal)
 
 int sem_del(SEM *sem)
 {
-  int sucess = 1;
-  sucess = pthread_mutex_destroy(&sem -> mutex);
-  sucess = pthread_cond_destroy(&sem -> conditon_var);
+  int error = 0;
+  error = pthread_mutex_destroy(&sem -> mutex);
+  error = pthread_cond_destroy(&sem -> conditon_var);
   free(&sem -> value);
   free(sem);
-  return sucess? 0 : -1;
+  return error ? -1 : 0;
 }
 
 /* P (wait) operation.
@@ -110,10 +114,11 @@ int sem_del(SEM *sem)
 
 void P(SEM *sem)
 {
-  pthread_mutex_lock(&sem -> mutex);
+  pthread_mutex_lock(&(sem -> mutex));
+  printf("sem -> value: %d \n", sem->value);
   while(sem -> value == 0){pthread_cond_wait(&sem->conditon_var, &sem->mutex);}
   sem -> value--;
-  pthread_mutex_unlock(&sem -> mutex);
+  pthread_mutex_unlock(&(sem -> mutex));
 }
 
 /* V (signal) operation.
@@ -125,7 +130,6 @@ void P(SEM *sem)
  *
  * sem           handle of the semaphore to increment
  */
-
 void V(SEM *sem)
 {
   pthread_mutex_lock(&sem-> mutex);

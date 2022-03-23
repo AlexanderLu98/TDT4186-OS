@@ -63,10 +63,11 @@ BNDBUF *bb_init(unsigned int size)
   if(!(&bb-> buffer))
   {
     free(bb);
+    printf("OH NO BUFFER! \n");
     return NULL;
   }
 
-  // setting both new and old to the start start adress of buffer
+  // setting both new and old to the start adress of the buffer
   bb -> new = bb -> buffer;
   bb -> old = bb -> buffer;
 
@@ -119,7 +120,7 @@ int  bb_get(BNDBUF *bb)
 {
   // checks if there is any data if so.
   V(bb -> filled_slots); //uncertain if correct
-  int item = *bb->new;
+  int item = *bb->old;
   bb -> old += sizeof(int);
   if (bb -> old == bb -> buffer + bb -> size*sizeof(int))
       bb -> old = bb -> buffer;
@@ -149,7 +150,7 @@ void bb_add(BNDBUF *bb, int fd)
   // tries to put something in to the buffer, blocks if there are no empty slots
   P(bb -> empty_slots);
   *bb->new = fd;
-  bb->new++;
+  bb->new += sizeof(int);
   if (bb->new == bb->buffer + bb->size*sizeof(int))
     bb->new = bb->buffer;
   V(bb -> filled_slots);

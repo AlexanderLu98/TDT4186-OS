@@ -22,7 +22,9 @@ typedef struct BNDBUF
 {
   // buffer of ints and it's length
   int *buffer;
-  int size;
+  unsigned int size;
+  int old;
+  int new;
 
   // counting semaphores
   SEM *filled_slots;
@@ -64,11 +66,8 @@ BNDBUF *bb_init(unsigned int size)
     return NULL;
   }
 
-  // initializing the buffer with INT_MIN to signify an empty cell.
-  for(int i=0; i < bb -> size; i++)
-  {
-    bb -> buffer[i] = INT_MIN;
-  }
+  bb -> new = bb -> buffer;
+  bb -> old = bb -> buffer;
 
   // init the semaphores
   bb -> filled_slots = sem_init(0);
@@ -118,20 +117,13 @@ void bb_del(BNDBUF *bb)
 int  bb_get(BNDBUF *bb)
 {
   // checks if there is any data if so.
-  V(bb -> filled_slots);
-  // do something here
-  int item = INT_MIN;
-  for(int i = 0; i < bb->size; i++)
-  {
-    if(bb -> buffer[i] > INT_MIN)
-    {
-      item = bb -> buffer[i];
-      bb -> buffer[i] = INT_MIN;
-    }
-  }
-
-  // increments the empty semaphore - signaling that there is an open slot in the buffer.
+  V(bb -> filled_slots); //uncertain if correct
   P(bb -> empty_slots);
+
+  int item = *bb -> old;
+  bb -> old++;
+  if (bb -> old == bb -> buffer + bb -> size)
+      bb -> old = bb -> buffer;
   return item;
 }
 
@@ -155,14 +147,9 @@ void bb_add(BNDBUF *bb, int fd)
 {
   // tries to put something in to the buffer, blocks if there are no empty slots
   P(bb -> empty_slots);
-  // loops through the list checking for empty slots.
-  for(int i = 0; i < bb->size; i++)
-  {
-    if(bb -> buffer[i] == INT_MIN)
-    {
-      bb -> buffer[i] = fd;
-    }
-  }
-  // updates the number of filled slots - making it possible to read from buffer.
   V(bb -> filled_slots);
+  *bb->new = fd;
+   bb->new++;
+    if (bb->new == bb->buffer + bb->size)
+        bb->new = bb->buffer;
 }

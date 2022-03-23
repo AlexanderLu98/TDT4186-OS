@@ -23,8 +23,8 @@ typedef struct BNDBUF
   // buffer of ints and it's length
   int *buffer;
   unsigned int size;
-  int old;
-  int new;
+  int *old;
+  int *new;
 
   // counting semaphores
   SEM *filled_slots;
@@ -66,6 +66,7 @@ BNDBUF *bb_init(unsigned int size)
     return NULL;
   }
 
+  // setting both new and old to the start start adress of buffer
   bb -> new = bb -> buffer;
   bb -> old = bb -> buffer;
 
@@ -94,8 +95,8 @@ void bb_del(BNDBUF *bb)
   sem_del(bb-> empty_slots);
 
   free(bb  -> buffer);
-  free(&bb -> buffer);
-  free(&bb -> size);
+  free(bb -> new);
+  free(bb -> old);
   free(bb);
 }
 
@@ -118,13 +119,13 @@ int  bb_get(BNDBUF *bb)
 {
   // checks if there is any data if so.
   V(bb -> filled_slots); //uncertain if correct
-  P(bb -> empty_slots);
-
-  int item = *bb -> old;
-  bb -> old++;
-  if (bb -> old == bb -> buffer + bb -> size)
+  int item = *bb->new;
+  bb -> old += sizeof(int);
+  if (bb -> old == bb -> buffer + bb -> size*sizeof(int))
       bb -> old = bb -> buffer;
+  P(bb -> empty_slots);
   return item;
+
 }
 
 /* Add an element to the bounded buffer.
@@ -147,9 +148,9 @@ void bb_add(BNDBUF *bb, int fd)
 {
   // tries to put something in to the buffer, blocks if there are no empty slots
   P(bb -> empty_slots);
-  V(bb -> filled_slots);
   *bb->new = fd;
-   bb->new++;
-    if (bb->new == bb->buffer + bb->size)
-        bb->new = bb->buffer;
+  bb->new++;
+  if (bb->new == bb->buffer + bb->size*sizeof(int))
+    bb->new = bb->buffer;
+  V(bb -> filled_slots);
 }

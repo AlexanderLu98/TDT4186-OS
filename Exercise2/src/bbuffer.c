@@ -119,14 +119,13 @@ void bb_del(BNDBUF *bb)
 int  bb_get(BNDBUF *bb)
 {
   // checks if there is any data if so.
-  V(bb -> filled_slots); //uncertain if correct
+  V(bb -> filled_slots);
   int item = *bb->old;
   bb -> old += sizeof(int);
   if (bb -> old == bb -> buffer + bb -> size*sizeof(int))
       bb -> old = bb -> buffer;
   P(bb -> empty_slots);
   return item;
-
 }
 
 /* Add an element to the bounded buffer.

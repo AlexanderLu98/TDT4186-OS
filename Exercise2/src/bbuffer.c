@@ -27,6 +27,7 @@ typedef struct BNDBUF
   int *new;
 
   // counting semaphores
+  SEM *lock;
   SEM *filled_slots;
   SEM *empty_slots;
 
@@ -72,6 +73,7 @@ BNDBUF *bb_init(unsigned int size)
   bb -> old = bb -> buffer;
 
   // init the semaphores
+  bb -> lock         = sem_init(1);
   bb -> filled_slots = sem_init(0);
   bb -> empty_slots  = sem_init(size);
 
@@ -92,10 +94,11 @@ BNDBUF *bb_init(unsigned int size)
 
 void bb_del(BNDBUF *bb)
 {
+  sem_del(bb-> lock);
   sem_del(bb-> filled_slots);
   sem_del(bb-> empty_slots);
 
-  free(bb  -> buffer);
+  free(bb -> buffer);
   free(bb -> new);
   free(bb -> old);
   free(bb);
@@ -119,12 +122,14 @@ void bb_del(BNDBUF *bb)
 int  bb_get(BNDBUF *bb)
 {
   // checks if there is any data if so.
-  V(bb -> filled_slots);
+  P(bb -> filled_slots);
+  P(bb -> lock);
   int item = *bb->old;
   bb -> old += sizeof(int);
   if (bb -> old == bb -> buffer + bb -> size*sizeof(int))
       bb -> old = bb -> buffer;
-  P(bb -> empty_slots);
+  V(bb -> lock);
+  V(bb -> empty_slots);
   return item;
 }
 
@@ -148,9 +153,11 @@ void bb_add(BNDBUF *bb, int fd)
 {
   // tries to put something in to the buffer, blocks if there are no empty slots
   P(bb -> empty_slots);
+  P(bb -> lock);
   *bb->new = fd;
   bb->new += sizeof(int);
   if (bb->new == bb->buffer + bb->size*sizeof(int))
     bb->new = bb->buffer;
+  V(bb -> lock);
   V(bb -> filled_slots);
 }

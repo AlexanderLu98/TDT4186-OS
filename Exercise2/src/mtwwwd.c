@@ -3,11 +3,13 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/sendfile.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <pthread.h>
 #include "sem.h"
 #include "bbuffer.h"
+
 
 #define MAXREQ (4096*1024)
 
@@ -23,18 +25,6 @@ int main(int argc, char *argv[])
   int num_of_threads;
   int num_of_buffer_slots;
   BNDBUF *bb;
-
-  // DEBUG AREA -- JUST FOR TESTING!
-  /*
-  printf("starting init!\n");
-  BNDBUF *bb = bb_init(10);
-  printf("starting add!\n");
-  bb_add(bb, 20);
-  printf("got past add!\n");
-  printf("%d \n", bb_get(bb));
-  return 0;
-  */
-  // DEBUG AREA -- JUST FOR TESTING!
 
   // Parse arguments
   if (argc > 1)
@@ -78,46 +68,37 @@ int main(int argc, char *argv[])
   {
     int connfd, n;
     char *www_path, *buffer, *body, *msg;
-    www_path = malloc(sizeof(char)*MAXREQ);
-    buffer   = malloc(sizeof(char)*MAXREQ);
-    body     = malloc(sizeof(char)*MAXREQ);
-    msg      = malloc(sizeof(char)*MAXREQ);
+    www_path = (char*) malloc(sizeof(char)*(MAXREQ));
+    buffer   = (char*) malloc(sizeof(char)*(MAXREQ));
+    body     = (char*) malloc(sizeof(char)*(MAXREQ));
+    msg      = (char*) malloc(sizeof(char)*(MAXREQ));
     FILE *fp;
 
-    //strcpy(www_path, "Yo\n");
-
-    printf("Got to before the while loop: %s \n", www_path_head);
     while(1)
     {
       printf("Checkpoint 0!\n");
       connfd = bb_get(bb);
-      printf("Checkpoint 1!\n");
-      n = read(connfd, buffer, sizeof(buffer) - 1);
-      printf("Checkpoint 2!\n");
+      n = read(connfd, buffer, MAXREQ);
       if(n < 0) error("Error reading from socket");
 
-
       printf("Checkpoint 3!\n");
-      //printf("Before: %s\n", www_ph);
       strcpy(www_path, www_path_head);
-      printf("After : %s\n", www_path);
       // ignores the first token after " "
       strtok(buffer, " ");
       // concatenates the second token to www_path
       strcat(www_path, strtok(NULL, " "));
       // opens the requested file
-      fp = fopen("/home/hallvard/tdt4186/TDT4186-OS/Exercise2/pages/index.html","r");
+      fp = fopen(www_path,"r");
+      wait();
 
       if (fp != NULL)
       {
-        printf("Checkpoint 4!\n");
         size_t newLen = fread(body, sizeof(char), MAXREQ, fp);
-
         if ( ferror(fp) != 0 )
         {
           fputs("Error reading file\n", stderr);
           strcpy(body, "404 no such file!\n");
-          snprintf(msg, sizeof(msg),
+          snprintf(msg, MAXREQ,
                     "HTTP/1.0 200 OK\n"
                     "Content-Type: text/html\n"
                     "Content-Length: %d\n\n%s",
@@ -127,7 +108,7 @@ int main(int argc, char *argv[])
         else
         {
           body[newLen++] = '\0';
-          snprintf(msg, sizeof(msg),
+          snprintf(msg, MAXREQ,
                     "HTTP/1.0 200 OK\n"
                     "Content-Type: text/html\n"
                     "Content-Length: %d\n\n%s",
@@ -137,19 +118,30 @@ int main(int argc, char *argv[])
         }
         fclose(fp);
       }
+      else
+      {
+        fputs("Error reading file\n", stderr);
+        strcpy(body, "404 no such file!\n");
+        snprintf(msg, MAXREQ,
+                 "HTTP/1.0 200 OK\n"
+                 "Content-Type: text/html\n"
+                 "Content-Length: %d\n\n%s",
+                 strlen(body), body);
+        n = write(connfd, msg, strlen(msg));
+      }
       close(connfd);
     }
+
     free(www_path);
     free(buffer);
     free(body);
     free(msg);
   }
 
-
   //initializing threads.
   for(int i=0; i<num_of_threads; i++)
   {
-      pthread_create(&threads[i], NULL, serve_request, NULL);
+    pthread_create(&threads[i], NULL, serve_request, NULL);
   }
 
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -171,11 +163,11 @@ int main(int argc, char *argv[])
   {
     clilen = sizeof(cli_addr);
     connfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+    printf("Checkpoint -1! %d\n", connfd);
     if(connfd < 0) error("Error on accept \n");
     printf("Connection accepted \n");
     bb_add(bb, connfd);
   }
-
   // cleaning up by deleting bounded buffer
   bb_del(bb);
 }

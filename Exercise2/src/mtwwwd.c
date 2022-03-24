@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
   FILE *fp;
 
   // DEBUG AREA -- JUST FOR TESTING!
-
   /*
   printf("starting init!\n");
   BNDBUF *bb = bb_init(10);
@@ -33,8 +32,8 @@ int main(int argc, char *argv[])
   bb_add(bb, 20);
   printf("got past add!\n");
   printf("%d \n", bb_get(bb));
+  return 0;
   */
-
   // DEBUG AREA -- JUST FOR TESTING!
 
   // Parse arguments

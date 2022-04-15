@@ -11,6 +11,60 @@
 #define MAX_CMD_LENGTH 4096
 #define MAX_ARG_COUNT 30
 
+// struct for linked list
+typedef struct AProcess
+{
+  struct AProcess* prev;
+  struct AProcess* next;
+  int PID;
+  char* cmd;
+
+}AProcess; 
+
+
+struct AProcess* init_AProc(AProcess* next, AProcess* prev, int PID, char* cmd)
+{
+  AProcess* aproc = malloc(sizeof(AProcess));
+  aproc -> next = next; 
+  aproc -> prev = prev;
+  aproc -> PID  = PID;
+  aproc -> cmd  = cmd; 
+
+  return aproc; 
+}
+
+void del_AProc(AProcess* aproc)
+{
+  if(aproc -> prev != NULL)
+  {
+    aproc -> prev -> next = aproc -> next;
+  }
+  if(aproc -> next != NULL)
+  {
+    aproc -> next -> prev = aproc -> prev;  
+  }
+  free(aproc);
+}
+
+void del_linked_AProc(AProcess* aproc)
+{
+  AProcess* head = aproc -> prev;
+  AProcess* next = aproc -> next;
+
+  while(head -> prev != NULL) //iterates through list to find the head
+  {
+    head = head->prev; 
+  }
+
+  do
+  {
+    next = head -> next;
+    del_AProc(head);
+    head = next; 
+  }
+  while(next != NULL);
+}
+
 
 // Helper method to flush stdin.
 void flush_in(void)
@@ -22,7 +76,7 @@ void flush_in(void)
 
 void make_null(char** buffer, int length) 
 {
-  for(int i = 0; i < lengthd; i++)
+  for(int i = 0; i < length; i++)
   {
     buffer[i] = NULL;
   }
@@ -94,16 +148,14 @@ unsigned int _fork(char** paths, char** args)
 {
   unsigned int pid = fork();
 
-  if (pid != 0)
+  if(pid != 0)
   { // Parent
     return pid;
   }
   else
   {
     int error = 0; 
-    // here I should do something to search for the different executables
-    error = execute_command(paths, args);
-    
+    error = execute_command(paths, args); 
     if(error != 0)
     {
       perror("Following error occured executing command");
@@ -169,10 +221,11 @@ int main()
 
 // Command line redirection
 /*
- * TODO: 3.3 the command will need to be tokenized in two operations. The < operator can bee treated as token
- *           when seperated by spaces. The io redicretion only servers to read and write to files, and therefore
- *           the operation is less complicated than the pipe. The input is either passes as an argument to the bash 
- *           file, or the output is passed as an argument to a write operation to a text file. 
+ * TODO: 3.3 the command will need to be tokenized in two operations. The < operator can bee treated as 
+ *           token when seperated by spaces. The io redicretion only servers to read and write to files, 
+ *           and therefore the operation is less complicated than the pipe. The input is either passes as 
+ *           an argument to the bash file, or the output is passed as an argument to a write operation to 
+ *           a text file. 
  * TODO: 3.4 Should be pretty simply done with an if else clause at the end,
  *           the forground task should also catch zombies though. A linked list with appropriate 
  *           structs should keep the pids in order. 

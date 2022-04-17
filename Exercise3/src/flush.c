@@ -9,7 +9,7 @@
 #include <errno.h>
 #define MAX_PATH_LENGTH 2048
 #define MAX_CMD_LENGTH 4096
-#define MAX_ARG_COUNT 30
+#define MAX_ARG_COUNT 50
 
 // struct for linked list for active processes
 typedef struct AProcess
@@ -23,7 +23,7 @@ typedef struct AProcess
 
 struct AProcess* init_AProcess(int PID, char* cmd)
 {
-  AProcess* aproc = malloc(sizeof(AProcess));
+  AProcess* aproc = (AProcess*)malloc(sizeof(AProcess));
   aproc -> next = NULL; 
   aproc -> PID  = PID;
   aproc -> cmd  = malloc(sizeof(char)*MAX_CMD_LENGTH); 
@@ -31,48 +31,48 @@ struct AProcess* init_AProcess(int PID, char* cmd)
   return aproc; 
 }
 
-struct AProcess* del_AProcess_by_PID(AProcess* head, int PID)
+void del_AProcess_by_PID(AProcess** head, int PID)
 {
   // Deletes the element in the list matching the PID
-  // Does not guard against this being the head of the list.  
-  AProcess* tmp = head;
-  AProcess* aproc = tmp -> next;
+  // Does not guard against this being the head of the list.
+  AProcess *tmp = *head, *prev;
 
-  if(head -> PID == PID)
+  if(tmp != NULL && tmp -> PID == PID)
   {
-    free(head -> cmd);
-    free(head);
-    return aproc; //returns the next element in the list as the head 
+    *head = tmp->next;
+    free(tmp -> cmd);
+    free(tmp); 
+  }  
+  
+  while(tmp != NULL && tmp -> PID != PID)
+  {
+    prev = tmp; 
+    tmp = tmp -> next;
+  } 
+
+  // No PID found
+  if(tmp == NULL)
+  {
+    return;
   }
 
-  while(aproc != NULL)
-  {
-    if(aproc -> PID == PID)
-    {
-      tmp -> next = aproc -> next; 
-      free(&aproc -> cmd);
-      free(aproc);
-      break;
-    }
-    else
-    {
-      tmp = aproc; 
-      aproc = aproc -> next; 
-    }
-  }
-  return head; 
+  prev -> next = tmp -> next;
+  
+  free(tmp->cmd);
+  free(tmp);
+
 }
 
 struct AProcess* get_AProcess_by_PID(AProcess* head, int PID)
 {
-  AProcess* aproc = head; 
-  while(aproc != NULL)
+  AProcess* tmp = head; 
+  while(tmp != NULL)
   {
-    if(aproc -> PID == PID)
+    if(tmp -> PID == PID)
     {
-      return aproc; 
+      return tmp; 
     }
-    aproc = aproc -> next; 
+    tmp = tmp -> next; 
   }
   return NULL; 
 }
@@ -162,8 +162,9 @@ int change_directory(char** args)
 int execute_command(char** paths, char** args)
 {
   int error; // if executing the command was sucessfull or not
-  char cmd_pth[MAX_PATH_LENGTH];
-  
+  char  cmd_pth[MAX_PATH_LENGTH];
+  char* cmd_buffer[MAX_ARG_COUNT]; //buffer for args 
+ 
   if(access(args[0], F_OK) == 0)
   {
     strcpy(cmd_pth, args[0]);
@@ -179,8 +180,38 @@ int execute_command(char** paths, char** args)
       }
     }
   }
-  // lets execv handle the error messagin even when file not found
-  error = execv(cmd_pth, args);
+
+  //int j = 0;
+  FILE* fp;
+  int std_opt;
+  char file_opt[4];   
+  for(int i, j = 0; (args[i] != NULL) && i < MAX_ARG_COUNT; i++)
+  { 
+    // Go through the args. if '<' or '>' is encountered, put it into the buffer
+    if(strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0)
+    {
+      std_opt = strcmp(args[i], "<") ? STDOUT_FILENO: STDIN_FILENO; // if its not one it the other 
+      strcmp(args[i], "<") ? strcpy(file_opt, "w") : strcpy(file_opt, "r"); 
+      i++;
+      if(i > MAX_ARG_COUNT) break; // breaks loop is out of range
+      if(args[i] == NULL) break;   // breaks loop and ignores token if "<" or ">" is last arg
+      if((fp = fopen(args[i], file_opt)) == NULL)
+      {
+        perror(args[i]);
+        error = -1; 
+        return error; 
+      }
+      dup2(fileno(fp), std_opt);
+      fclose(fp);
+    } 
+    else
+    {
+      cmd_buffer[j] = args[i];
+      j++;
+    }
+       
+  } 
+  error = execv(cmd_pth, cmd_buffer);
   return error; 
 }
 
@@ -302,7 +333,7 @@ int main()
     {
       AProcess* DAProc = get_AProcess_by_PID(head, dead_PID);
       printf("Exit status: %d cmd:[%s], PID: %d. \n", exit_status, DAProc->cmd, DAProc->PID);
-      head = del_AProcess_by_PID(head, dead_PID);
+      del_AProcess_by_PID(&head, dead_PID);
     }
     make_null(args, MAX_ARG_COUNT); 
   }
@@ -316,15 +347,8 @@ int main()
  *           and therefore the operation is less complicated than the pipe. The input is either passes 
  *           as an argument to the bash file, or the output is passed as an argument to a 
  *           write operation to a text file.
- *
- * TODO: 3.4 Should be pretty simply done with an if else clause at the end,
- *           the forground task should also catch zombies though. A linked list with appropriate 
- *           structs should keep the pids in order. 
- *           When a task is complete the linked list element is delted and its memory cleared 
- *
- * TODO: 3.5 Walk the linked list and print out the PID and cmd. Same cmd structure as cd. 
- *
- * /
- * */
+ *           
+ *           Can write it in the execute_command function. Can be handeled by two if clauses.
+ */
 
 

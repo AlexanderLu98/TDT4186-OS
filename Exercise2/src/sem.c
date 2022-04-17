@@ -115,7 +115,7 @@ int sem_del(SEM *sem)
 void P(SEM *sem)
 {
   pthread_mutex_lock(&(sem -> mutex));
-  printf("sem -> value: %d \n", sem->value);
+  printf("P: sem -> value: %d \n", sem->value);
   while(sem -> value == 0){pthread_cond_wait(&sem->conditon_var, &sem->mutex);}
   sem -> value--;
   pthread_mutex_unlock(&(sem -> mutex));
@@ -134,6 +134,7 @@ void V(SEM *sem)
 {
   pthread_mutex_lock(&sem-> mutex);
   sem -> value ++;
+  printf("V: sem -> value: %d \n", sem->value);
   if(sem -> value > 0){pthread_cond_signal(&sem -> conditon_var);}
   pthread_mutex_unlock(&sem-> mutex);
 }

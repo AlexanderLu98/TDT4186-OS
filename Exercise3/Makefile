@@ -8,10 +8,10 @@ CFLAGS  = -pthread -g -Wall
 
 # the build target executable:
 
-TARGET = mtwwwd
+TARGET = flush
 
-$(TARGET): src/mtwwwd.c src/sem.c src/bbuffer.c
-	$(CC) $(CFLAGS) -o $(TARGET) src/mtwwwd.c src/sem.c src/bbuffer.c
+$(TARGET): src/flush.c
+	$(CC) $(CFLAGS) -o $(TARGET) src/flush.c
 
 clean:
 	$(RM) $(TARGET)
